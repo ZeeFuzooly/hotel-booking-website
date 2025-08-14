@@ -106,6 +106,36 @@ class InMemoryDatabase {
     return this.rooms.get(parseInt(id));
   }
 
+  createRoom(roomData) {
+    const room = {
+      id: this.roomIdCounter++,
+      ...roomData,
+      is_available: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    this.rooms.set(room.id, room);
+    return room;
+  }
+
+  updateRoom(id, updates) {
+    const room = this.rooms.get(parseInt(id));
+    if (room) {
+      Object.assign(room, updates, { updated_at: new Date().toISOString() });
+      this.rooms.set(parseInt(id), room);
+    }
+    return room;
+  }
+
+  deleteRoom(id) {
+    const roomId = parseInt(id);
+    if (this.rooms.has(roomId)) {
+      this.rooms.delete(roomId);
+      return true;
+    }
+    return false;
+  }
+
   updateRoomAvailability(id, isAvailable) {
     const room = this.rooms.get(parseInt(id));
     if (room) {
@@ -194,47 +224,114 @@ const db = new InMemoryDatabase();
 // Simulate database methods for compatibility
 const dbWrapper = {
   get: (query, params, callback) => {
-    // Handle different query types
-    if (query.includes('SELECT') && query.includes('users') && query.includes('email')) {
-      const email = params[0];
-      const user = db.getUserByEmail(email);
-      callback(null, user);
-    } else if (query.includes('SELECT') && query.includes('users') && query.includes('id')) {
-      const id = params[0];
-      const user = db.getUserById(id);
-      callback(null, user);
-    } else if (query.includes('SELECT') && query.includes('refresh_tokens')) {
-      const token = params[0];
-      const tokenRecord = db.getRefreshToken(token);
-      callback(null, tokenRecord);
+    try {
+      // Handle different query types
+      if (query.includes('SELECT') && query.includes('users') && query.includes('email')) {
+        const email = params[0];
+        const user = db.getUserByEmail(email);
+        callback(null, user);
+      } else if (query.includes('SELECT') && query.includes('users') && query.includes('id')) {
+        const id = params[0];
+        const user = db.getUserById(id);
+        callback(null, user);
+      } else if (query.includes('SELECT') && query.includes('refresh_tokens')) {
+        const token = params[0];
+        const tokenRecord = db.getRefreshToken(token);
+        callback(null, tokenRecord);
+      } else if (query.includes('SELECT') && query.includes('rooms') && query.includes('id')) {
+        const id = params[0];
+        const room = db.getRoomById(id);
+        callback(null, room);
+      } else if (query.includes('SELECT') && query.includes('COUNT(*)')) {
+        // Handle count queries
+        if (query.includes('rooms')) {
+          const rooms = db.getAllRooms();
+          callback(null, { total: rooms.length });
+        } else {
+          callback(null, { total: 0 });
+        }
+      } else {
+        // Default case - return null for unknown queries
+        callback(null, null);
+      }
+    } catch (error) {
+      console.error('Database get error:', error);
+      callback(error, null);
     }
   },
 
   run: (query, params, callback) => {
-    // Handle different query types
-    if (query.includes('INSERT INTO users')) {
-      const [email, password, first_name, last_name, phone] = params;
-      const user = db.createUser({ email, password, first_name, last_name, phone });
-      callback(null, { lastID: user.id });
-    } else if (query.includes('INSERT INTO refresh_tokens')) {
-      const [userId, token, expiresAt] = params;
-      const tokenRecord = db.storeRefreshToken(userId, token, expiresAt);
-      callback(null, { lastID: tokenRecord.id });
-    } else if (query.includes('DELETE FROM refresh_tokens')) {
-      const token = params[0];
-      const success = db.removeRefreshToken(token);
-      callback(null, { changes: success ? 1 : 0 });
+    try {
+      // Handle different query types
+      if (query.includes('INSERT INTO users')) {
+        const [email, password, first_name, last_name, phone] = params;
+        const user = db.createUser({ email, password, first_name, last_name, phone });
+        callback(null, { lastID: user.id });
+      } else if (query.includes('INSERT INTO refresh_tokens')) {
+        const [userId, token, expiresAt] = params;
+        const tokenRecord = db.storeRefreshToken(userId, token, expiresAt);
+        callback(null, { lastID: tokenRecord.id });
+      } else if (query.includes('DELETE FROM refresh_tokens')) {
+        const token = params[0];
+        const success = db.removeRefreshToken(token);
+        callback(null, { changes: success ? 1 : 0 });
+      } else if (query.includes('INSERT INTO rooms')) {
+        // Handle room creation
+        const [name, description, price_per_night, capacity, room_type, amenities, image_url] = params;
+        const room = db.createRoom({ name, description, price_per_night, capacity, room_type, amenities, image_url });
+        callback(null, { lastID: room.id });
+      } else if (query.includes('UPDATE rooms')) {
+        // Handle room updates
+        const id = params[params.length - 1]; // Last parameter is usually the ID
+        const room = db.updateRoom(id, {});
+        callback(null, { changes: room ? 1 : 0 });
+      } else if (query.includes('DELETE FROM rooms')) {
+        // Handle room deletion
+        const id = params[0];
+        const success = db.deleteRoom(id);
+        callback(null, { changes: success ? 1 : 0 });
+      } else if (query.includes('INSERT INTO bookings')) {
+        // Handle booking creation
+        const [booking_id, user_id, room_id, check_in_date, check_out_date, guest_count, total_price, status, special_requests] = params;
+        const booking = db.createBooking({ booking_id, user_id, room_id, check_in_date, check_out_date, guest_count, total_price, status, special_requests });
+        callback(null, { lastID: booking.id });
+      } else {
+        // Default case for other queries
+        callback(null, { changes: 0 });
+      }
+    } catch (error) {
+      console.error('Database run error:', error);
+      callback(error, null);
     }
   },
 
   all: (query, params, callback) => {
-    if (query.includes('SELECT') && query.includes('rooms')) {
-      const rooms = db.getAllRooms();
-      callback(null, rooms);
-    } else if (query.includes('SELECT') && query.includes('bookings') && query.includes('user_id')) {
-      const userId = params[0];
-      const bookings = db.getBookingsByUserId(userId);
-      callback(null, bookings);
+    try {
+      if (query.includes('SELECT') && query.includes('rooms')) {
+        const rooms = db.getAllRooms();
+        callback(null, rooms);
+      } else if (query.includes('SELECT') && query.includes('bookings') && query.includes('user_id')) {
+        const userId = params[0];
+        const bookings = db.getBookingsByUserId(userId);
+        callback(null, bookings);
+      } else if (query.includes('SELECT DISTINCT room_type FROM rooms')) {
+        const rooms = db.getAllRooms();
+        const roomTypes = [...new Set(rooms.map(room => room.room_type))];
+        callback(null, roomTypes.map(type => ({ room_type: type })));
+      } else if (query.includes('SELECT amenities FROM rooms')) {
+        const rooms = db.getAllRooms();
+        callback(null, rooms.map(room => ({ amenities: room.amenities })));
+      } else if (query.includes('SELECT') && query.includes('bookings')) {
+        // Handle other booking queries
+        const bookings = Array.from(db.bookings.values());
+        callback(null, bookings);
+      } else {
+        // Default case - return empty array for unknown queries
+        callback(null, []);
+      }
+    } catch (error) {
+      console.error('Database all error:', error);
+      callback(error, null);
     }
   }
 };
