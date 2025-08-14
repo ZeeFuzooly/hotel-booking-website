@@ -19,7 +19,7 @@ app.use(helmet());
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-domain.com'] 
+    ? ['https://hotel-booking-website-zee-fuzooly.vercel.app', 'https://hotel-booking-website-git-main-zee-fuzooly.vercel.app'] 
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
@@ -88,11 +88,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-});
+// Only start server if not in Vercel environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  });
+}
 
 module.exports = app;
