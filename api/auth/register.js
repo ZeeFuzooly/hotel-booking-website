@@ -1,4 +1,4 @@
-const { getUsers, addUser } = require('../shared-data');
+const { getUsers, addUser, findUserByEmail } = require('../shared-data');
 
 module.exports = (req, res) => {
   // Set CORS headers
@@ -32,8 +32,8 @@ module.exports = (req, res) => {
     // Get users from shared data store
     const users = getUsers();
     
-    // Check if user already exists
-    const existingUser = users.find(u => u.email === email);
+    // Check if user already exists in shared data store
+    const existingUser = findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({
         error: 'User already exists',

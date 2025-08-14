@@ -1,4 +1,4 @@
-const { getUsers } = require('../shared-data');
+const { getUsers, findUserByCredentials } = require('../shared-data');
 
 module.exports = (req, res) => {
   // Set CORS headers
@@ -29,10 +29,38 @@ module.exports = (req, res) => {
       });
     }
     
-    // Get users from shared data store
-    const users = getUsers();
+    // Sample users for testing (in production, this would come from a database)
+    const sampleUsers = [
+      {
+        id: 1,
+        email: "ziranfuzooly@gmail.com",
+        password: "Ziran2797@",
+        first_name: "Ziran",
+        last_name: "Fuzooly",
+        phone: "+94767997527",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        email: "test@example.com",
+        password: "password123",
+        first_name: "Test",
+        last_name: "User",
+        phone: "+1234567890",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
     
-    const user = users.find(u => u.email === email && u.password === password);
+    // Try to find user in sample users first
+    let user = sampleUsers.find(u => u.email === email && u.password === password);
+    
+    // If not found in sample users, try shared data store
+    if (!user) {
+      const users = getUsers();
+      user = findUserByCredentials(email, password);
+    }
     
     if (!user) {
       return res.status(401).json({
