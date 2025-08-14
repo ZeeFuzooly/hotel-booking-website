@@ -1,3 +1,5 @@
+const { getUsers } = require('../shared-data');
+
 module.exports = (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,8 +29,8 @@ module.exports = (req, res) => {
       });
     }
     
-    // Simple in-memory data store (in production, this would be a database)
-    const users = [];
+    // Get users from shared data store
+    const users = getUsers();
     
     const user = users.find(u => u.email === email && u.password === password);
     

@@ -1,3 +1,5 @@
+const { getUsers, addUser } = require('../shared-data');
+
 module.exports = (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,8 +29,8 @@ module.exports = (req, res) => {
       });
     }
     
-    // Simple in-memory data store (in production, this would be a database)
-    const users = [];
+    // Get users from shared data store
+    const users = getUsers();
     
     // Check if user already exists
     const existingUser = users.find(u => u.email === email);
@@ -51,7 +53,8 @@ module.exports = (req, res) => {
       updated_at: new Date().toISOString()
     };
     
-    users.push(newUser);
+    // Add user to shared data store
+    addUser(newUser);
     
     // Generate simple tokens (in production, use JWT)
     const accessToken = `token_${Date.now()}_${Math.random()}`;

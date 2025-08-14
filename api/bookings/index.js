@@ -1,3 +1,5 @@
+const { getBookings, addBooking } = require('../shared-data');
+
 module.exports = (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,12 +13,10 @@ module.exports = (req, res) => {
   }
   
   try {
-    // Simple in-memory data store
-    const bookings = [];
-    
     if (req.method === 'GET') {
       // Get bookings with pagination
       const { page = 1, limit = 10 } = req.query;
+      const bookings = getBookings();
       
       const totalBookings = bookings.length;
       const totalPages = Math.ceil(totalBookings / limit);
@@ -54,6 +54,8 @@ module.exports = (req, res) => {
         });
       }
       
+      const bookings = getBookings();
+      
       const newBooking = {
         id: bookings.length + 1,
         booking_id: `BK${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
@@ -71,7 +73,8 @@ module.exports = (req, res) => {
         updated_at: new Date().toISOString()
       };
       
-      bookings.push(newBooking);
+      // Add booking to shared data store
+      addBooking(newBooking);
       
       res.status(201).json({
         message: 'Booking created successfully',
