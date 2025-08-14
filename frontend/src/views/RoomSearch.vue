@@ -145,42 +145,170 @@
 
             <div class="search-advanced">
               <div class="advanced-toggle" @click="toggleAdvanced">
-                <span>Advanced Options</span>
-                <svg class="toggle-icon" :class="{ 'rotated': showAdvanced }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <div class="toggle-content">
+                  <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  <span class="toggle-text">Advanced Filters</span>
+                  <span class="toggle-subtitle">Price, amenities & more</span>
+                </div>
+                <svg class="toggle-arrow" :class="{ 'rotated': showAdvanced }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="6,9 12,15 18,9"/>
                 </svg>
               </div>
               
               <div v-if="showAdvanced" class="advanced-options">
-                <div class="price-range-group">
-                  <label class="form-label">Price Range (per night)</label>
-                  <div class="price-range">
-                    <div class="input-wrapper">
-                      <input
-                        v-model="filters.minPrice"
-                        type="number"
-                        class="form-input price-input"
-                        placeholder="Min"
-                        :min="0"
-                        @change="updateFilters"
-                      />
+                <div class="advanced-grid">
+                  <!-- Price Range & View Preferences Section -->
+                  <div class="filter-section">
+                    <div class="section-header">
+                      <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                      </svg>
+                      <h4 class="section-title">Price & View</h4>
+                      <p class="section-subtitle">Budget and view preferences</p>
                     </div>
-                    <div class="price-separator">
-                      <div class="separator-line"></div>
-                      <span>to</span>
-                      <div class="separator-line"></div>
+                    
+                    <!-- Price Range -->
+                    <div class="price-range">
+                      <div class="price-input-group">
+                        <label class="price-label">Minimum</label>
+                        <div class="input-wrapper">
+                          <span class="currency-symbol">S$</span>
+                          <input
+                            v-model="filters.minPrice"
+                            type="number"
+                            class="form-input price-input"
+                            placeholder="0"
+                            :min="0"
+                            @change="updateFilters"
+                          />
+                        </div>
+                      </div>
+                      <div class="price-separator">
+                        <div class="separator-line"></div>
+                        <span class="separator-text">to</span>
+                        <div class="separator-line"></div>
+                      </div>
+                      <div class="price-input-group">
+                        <label class="price-label">Maximum</label>
+                        <div class="input-wrapper">
+                          <span class="currency-symbol">S$</span>
+                          <input
+                            v-model="filters.maxPrice"
+                            type="number"
+                            class="form-input price-input"
+                            placeholder="1000+"
+                            :min="0"
+                            @change="updateFilters"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div class="input-wrapper">
-                      <input
-                        v-model="filters.maxPrice"
-                        type="number"
-                        class="form-input price-input"
-                        placeholder="Max"
-                        :min="0"
-                        @change="updateFilters"
-                      />
+                    
+                    <!-- View Preferences -->
+                    <div class="view-preferences">
+                      <h5 class="view-section-title">View Preferences</h5>
+                      <div class="view-options">
+                        <label class="view-option" v-for="view in availableViews" :key="view.value">
+                          <input 
+                            type="radio" 
+                            v-model="filters.view" 
+                            :value="view.value"
+                            @change="updateFilters"
+                          >
+                          <span class="radio-mark"></span>
+                          <span class="view-text">{{ view.label }}</span>
+                        </label>
+                      </div>
                     </div>
                   </div>
+
+                  <!-- Amenities Section -->
+                  <div class="filter-section">
+                    <div class="section-header">
+                      <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c-1 0-2-1-2-2s1-2 2-2 2 1 2 2-1 2-2 2z"/>
+                        <path d="M3 12c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z"/>
+                        <path d="M12 3c0 1-1 2-2 2s-2-1-2-2 1-2 2-2 2 1 2 2z"/>
+                        <path d="M12 21c0-1 1-2 2-2s2 1 2 2-1 2-2 2-2-1-2-2z"/>
+                      </svg>
+                      <h4 class="section-title">Must-Have Amenities</h4>
+                      <p class="section-subtitle">Select your preferred features</p>
+                    </div>
+                    <div class="amenities-grid">
+                      <label class="amenity-checkbox" v-for="amenity in availableAmenities" :key="amenity.value">
+                        <input 
+                          type="checkbox" 
+                          v-model="filters.amenities" 
+                          :value="amenity.value"
+                          @change="updateFilters"
+                        >
+                        <span class="checkmark">
+                          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"/>
+                          </svg>
+                        </span>
+                        <span class="amenity-text">{{ amenity.label }}</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Room Features Section -->
+                  <div class="filter-section">
+                    <div class="section-header">
+                      <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                      </svg>
+                      <h4 class="section-title">Room Features</h4>
+                      <p class="section-subtitle">Additional preferences</p>
+                    </div>
+                    <div class="features-grid">
+                      <label class="feature-checkbox" v-for="feature in availableFeatures" :key="feature.value">
+                        <input 
+                          type="checkbox" 
+                          v-model="filters.features" 
+                          :value="feature.value"
+                          @change="updateFilters"
+                        >
+                        <span class="checkmark">
+                          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"/>
+                          </svg>
+                        </span>
+                        <span class="feature-text">{{ feature.label }}</span>
+                      </label>
+                    </div>
+                  </div>
+
+
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                  <button type="button" class="quick-action-btn" @click="applyLuxuryFilters">
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Luxury Experience
+                  </button>
+                  <button type="button" class="quick-action-btn" @click="applyBudgetFilters">
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    Budget Friendly
+                  </button>
+                  <button type="button" class="quick-action-btn" @click="applyFamilyFilters">
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                      <circle cx="9" cy="7" r="4"/>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Family Friendly
+                  </button>
                 </div>
               </div>
             </div>
@@ -498,8 +626,47 @@ const filters = reactive({
   guests: 1,
   roomType: '',
   minPrice: null,
-  maxPrice: null
+  maxPrice: null,
+  amenities: [],
+  features: [],
+  view: ''
 })
+
+// Available filter options
+const availableAmenities = ref([
+  { value: 'wifi', label: 'Free WiFi' },
+  { value: 'pool', label: 'Swimming Pool' },
+  { value: 'spa', label: 'Spa & Wellness' },
+  { value: 'gym', label: 'Fitness Center' },
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'bar', label: 'Bar/Lounge' },
+  { value: 'parking', label: 'Free Parking' },
+  { value: 'concierge', label: '24/7 Concierge' },
+  { value: 'room-service', label: 'Room Service' },
+  { value: 'laundry', label: 'Laundry Service' },
+  { value: 'business-center', label: 'Business Center' },
+  { value: 'shuttle', label: 'Airport Shuttle' }
+])
+
+const availableFeatures = ref([
+  { value: 'balcony', label: 'Private Balcony' },
+  { value: 'ocean-view', label: 'Ocean View' },
+  { value: 'city-view', label: 'City View' },
+  { value: 'garden-view', label: 'Garden View' },
+  { value: 'connecting-rooms', label: 'Connecting Rooms' },
+  { value: 'accessible', label: 'Accessible Room' },
+  { value: 'non-smoking', label: 'Non-Smoking' },
+  { value: 'pet-friendly', label: 'Pet Friendly' }
+])
+
+const availableViews = ref([
+  { value: '', label: 'Any View' },
+  { value: 'ocean', label: 'Ocean View' },
+  { value: 'city', label: 'City View' },
+  { value: 'garden', label: 'Garden View' },
+  { value: 'mountain', label: 'Mountain View' },
+  { value: 'pool', label: 'Pool View' }
+])
 
 // Computed properties
 const rooms = computed(() => roomsStore.rooms)
@@ -607,7 +774,10 @@ const clearFilters = () => {
     guests: 1,
     roomType: '',
     minPrice: null,
-    maxPrice: null
+    maxPrice: null,
+    amenities: [],
+    features: [],
+    view: ''
   })
   
   roomsStore.clearSearchFilters()
@@ -745,6 +915,34 @@ const formatDate = (dateString) => {
 
 const toggleAdvanced = () => {
   showAdvanced.value = !showAdvanced.value
+}
+
+// Quick filter methods
+const applyLuxuryFilters = () => {
+  filters.minPrice = 300
+  filters.maxPrice = 2000
+  filters.amenities = ['wifi', 'pool', 'spa', 'gym', 'restaurant', 'concierge', 'room-service']
+  filters.features = ['balcony', 'ocean-view']
+  filters.view = 'ocean'
+  updateFilters()
+}
+
+const applyBudgetFilters = () => {
+  filters.minPrice = 50
+  filters.maxPrice = 200
+  filters.amenities = ['wifi', 'parking']
+  filters.features = []
+  filters.view = ''
+  updateFilters()
+}
+
+const applyFamilyFilters = () => {
+  filters.minPrice = 100
+  filters.maxPrice = 500
+  filters.amenities = ['wifi', 'pool', 'parking', 'restaurant']
+  filters.features = ['connecting-rooms', 'non-smoking']
+  filters.view = 'garden'
+  updateFilters()
 }
 
 // Watch for route query changes
@@ -1287,72 +1485,525 @@ onMounted(() => {
 .search-advanced {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .advanced-toggle {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: #f9fafb;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, 
+    var(--color-gray-50) 0%, 
+    white 50%, 
+    var(--color-gray-50) 100%);
+  border: 2px solid var(--color-gray-200);
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 600;
-  color: #374151;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.advanced-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.05) 0%, 
+    rgba(245, 158, 11, 0.05) 50%, 
+    rgba(16, 185, 129, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .advanced-toggle:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: linear-gradient(135deg, 
+    var(--color-primary-50) 0%, 
+    white 50%, 
+    var(--color-gold-50) 100%);
+  border-color: var(--color-primary-300);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.advanced-toggle:hover::before {
+  opacity: 1;
+}
+
+.toggle-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
 .toggle-icon {
-  width: 16px;
-  height: 16px;
-  color: #6b7280;
-  transition: transform 0.3s ease;
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary-600);
+  filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.2));
 }
 
-.toggle-icon.rotated {
+.toggle-text {
+  font-weight: 700;
+  color: var(--color-gray-900);
+  font-size: 1.125rem;
+}
+
+.toggle-subtitle {
+  color: var(--color-gray-600);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.toggle-arrow {
+  width: 20px;
+  height: 20px;
+  color: var(--color-gray-500);
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.toggle-arrow.rotated {
   transform: rotate(180deg);
 }
 
 .advanced-options {
   margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(249, 250, 251, 0.95) 100%);
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-lg);
+  animation: fadeInUp 0.4s ease-out;
 }
 
-.price-range-group {
+.advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
   margin-bottom: 1.5rem;
 }
 
-.price-range {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.filter-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid var(--color-gray-200);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
 }
 
-.price-input {
+.filter-section:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.section-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary-600);
+  filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.2));
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin: 0;
+}
+
+.section-subtitle {
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Price Range Styles */
+.price-range {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.price-input-group {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.price-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.price-input-group .input-wrapper {
+  position: relative;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-gray-500);
+  font-weight: 600;
+  font-size: 0.875rem;
+  z-index: 1;
+}
+
+.price-input-group .form-input {
+  padding-left: 2.5rem;
+  background: linear-gradient(135deg, white 0%, var(--color-gray-50) 100%);
+  border: 2px solid var(--color-gray-200);
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.price-input-group .form-input:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  background: white;
 }
 
 .price-separator {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
-  font-weight: 500;
-  font-size: 1rem;
+  padding: 0 0.5rem;
 }
 
 .separator-line {
-  flex: 1;
-  height: 1px;
-  background: #d1d5db;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(180deg, 
+    var(--color-gray-300) 0%, 
+    var(--color-gray-400) 50%, 
+    var(--color-gray-300) 100%);
+  border-radius: 1px;
+}
+
+.separator-text {
+  color: var(--color-gray-500);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* View Preferences Section */
+.view-preferences {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.view-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-gray-800);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.view-section-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, 
+    var(--color-primary-500) 0%, 
+    var(--color-gold-500) 100%);
+  border-radius: 2px;
+}
+
+/* Amenities Grid */
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+}
+
+.amenity-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background: var(--color-gray-50);
+}
+
+.amenity-checkbox:hover {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.amenity-checkbox input {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-gray-300);
+  border-radius: 4px;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  flex-shrink: 0;
+}
+
+.amenity-checkbox input:checked + .checkmark {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.check-icon {
+  width: 10px;
+  height: 10px;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.amenity-checkbox input:checked + .checkmark .check-icon {
+  opacity: 1;
+}
+
+.amenity-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  transition: color 0.3s ease;
+  line-height: 1.2;
+}
+
+.amenity-checkbox:hover .amenity-text {
+  color: var(--color-primary-700);
+}
+
+/* Features Grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.5rem;
+}
+
+.feature-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background: var(--color-gray-50);
+}
+
+.feature-checkbox:hover {
+  background: var(--color-gold-50);
+  border-color: var(--color-gold-200);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.feature-checkbox input {
+  display: none;
+}
+
+.feature-checkbox input:checked + .checkmark {
+  background: var(--color-gold-500);
+  border-color: var(--color-gold-500);
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+}
+
+.feature-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  transition: color 0.3s ease;
+  line-height: 1.2;
+}
+
+.feature-checkbox:hover .feature-text {
+  color: var(--color-gold-700);
+}
+
+/* View Options */
+.view-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+}
+
+.view-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background: var(--color-gray-50);
+}
+
+.view-option:hover {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-200);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.view-option input {
+  display: none;
+}
+
+.radio-mark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-gray-300);
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.view-option input:checked + .radio-mark {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-500);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.view-option input:checked + .radio-mark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+}
+
+.view-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  transition: color 0.3s ease;
+}
+
+.view-option:hover .view-text {
+  color: var(--color-primary-700);
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-gray-200);
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, 
+    var(--color-gray-50) 0%, 
+    white 50%, 
+    var(--color-gray-50) 100%);
+  color: var(--color-gray-700);
+  font-size: 0.8rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    var(--color-primary-500) 0%, 
+    var(--color-gold-500) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-300);
+  color: white;
+}
+
+.quick-action-btn:hover::before {
+  opacity: 1;
+}
+
+.action-icon {
+  width: 16px;
+  height: 16px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover .action-icon {
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.quick-action-btn span {
+  position: relative;
+  z-index: 1;
 }
 
 .search-actions {
@@ -1875,8 +2526,8 @@ onMounted(() => {
   }
   
   .advanced-options {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
+    margin-top: 1rem;
+    padding: 1rem;
     border-top: 1px solid #e5e7eb;
   }
   
@@ -2014,30 +2665,143 @@ onMounted(() => {
   .search-advanced {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--color-gray-200);
   }
   
   .advanced-toggle {
-    padding: 0.75rem 1rem;
+    padding: 1rem;
+  }
+  
+  .toggle-content {
+    gap: 0.75rem;
+  }
+  
+  .toggle-text {
+    font-size: 1rem;
+  }
+  
+  .toggle-subtitle {
+    font-size: 0.75rem;
   }
   
   .advanced-options {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e5e7eb;
+    margin-top: 1rem;
+    padding: 1rem;
   }
   
-  .price-range-group {
-    margin-bottom: 1.5rem;
+  .advanced-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .filter-section {
+    padding: 1rem;
+  }
+  
+  .section-header {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .section-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .section-title {
+    font-size: 1rem;
+  }
+  
+  .section-subtitle {
+    font-size: 0.75rem;
   }
   
   .price-range {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 1rem;
   }
   
   .price-separator {
-    display: none;
+    flex-direction: row;
+    padding: 0;
+  }
+  
+  .separator-line {
+    width: 20px;
+    height: 2px;
+  }
+  
+  .view-preferences {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+  
+  .view-section-title {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .view-section-title::before {
+    width: 3px;
+    height: 16px;
+  }
+  
+  .amenities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .amenity-checkbox {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .amenity-text {
+    font-size: 0.7rem;
+  }
+  
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .feature-checkbox {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .feature-text {
+    font-size: 0.7rem;
+  }
+  
+  .view-options {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .view-option {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .view-text {
+    font-size: 0.7rem;
+  }
+  
+  .quick-actions {
+    gap: 0.5rem;
+    padding-top: 1rem;
+  }
+  
+  .quick-action-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.7rem;
+    gap: 0.5rem;
+  }
+  
+  .action-icon {
+    width: 16px;
+    height: 16px;
   }
   
   .search-actions {

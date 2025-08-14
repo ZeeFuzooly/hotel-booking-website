@@ -360,41 +360,47 @@
           <p class="section-subtitle">Experience the difference with our premium services</p>
         </div>
         
-        <div class="features-grid">
+        <div class="features-grid animate-stagger">
           <div class="feature-card">
-            <div class="feature-icon">🏨</div>
-            <h3>Premium Accommodations</h3>
-            <p>Luxurious rooms with modern amenities and stunning views</p>
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9,22 9,12 15,12 15,22"/>
+              </svg>
+            </div>
+            <h3>Premium Experience</h3>
+            <p>Luxurious amenities and exceptional service</p>
           </div>
           
           <div class="feature-card">
-            <div class="feature-icon">📍</div>
-            <h3>Prime Locations</h3>
-            <p>Strategic locations near major attractions and business centers</p>
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h3>Secure & Private</h3>
+            <p>Your comfort and privacy are our priority</p>
           </div>
           
           <div class="feature-card">
-            <div class="feature-icon">💰</div>
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <h3>Perfect Location</h3>
+            <p>Convenient access to all attractions</p>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">
+              <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
             <h3>Best Price Guarantee</h3>
             <p>We guarantee the best rates for your stay</p>
-          </div>
-          
-          <div class="feature-card">
-            <div class="feature-icon">🔄</div>
-            <h3>Flexible Cancellation</h3>
-            <p>Free cancellation up to 24 hours before check-in</p>
-          </div>
-          
-          <div class="feature-card">
-            <div class="feature-icon">🛡️</div>
-            <h3>Secure Booking</h3>
-            <p>Safe and secure payment processing</p>
-          </div>
-          
-          <div class="feature-card">
-            <div class="feature-icon">📞</div>
-            <h3>24/7 Support</h3>
-            <p>Round-the-clock customer support for your needs</p>
           </div>
         </div>
       </div>
@@ -1657,47 +1663,257 @@ onMounted(() => {
 
 /* Why Choose Us Section */
 .why-choose-us {
-  padding: 4rem 0;
-  background: white;
+  padding: 6rem 0;
+  background: linear-gradient(135deg, 
+    var(--color-gray-50) 0%, 
+    white 50%, 
+    var(--color-gray-50) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.why-choose-us::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="luxury-pattern" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23059669" opacity="0.03"/><circle cx="80" cy="80" r="1" fill="%23059669" opacity="0.03"/><circle cx="50" cy="10" r="0.5" fill="%23059669" opacity="0.02"/><circle cx="10" cy="60" r="0.5" fill="%23059669" opacity="0.02"/><circle cx="90" cy="40" r="0.5" fill="%23059669" opacity="0.02"/></pattern></defs><rect width="100" height="100" fill="url(%23luxury-pattern)"/></svg>');
+  pointer-events: none;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .feature-card {
   text-align: center;
-  padding: 2rem;
-  border-radius: 12px;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-  border: 1px solid #e5e7eb;
+  padding: 2rem 1.5rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: var(--backdrop-blur-sm);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.02) 0%, 
+    rgba(245, 158, 11, 0.02) 50%, 
+    rgba(16, 185, 129, 0.02) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-luxury);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
 }
 
 .feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-2xl);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover::after {
+  transform: scaleX(1);
+}
+
+.feature-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, 
+    var(--color-primary-100) 0%, 
+    var(--color-primary-200) 50%, 
+    var(--color-gold-100) 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  position: relative;
+  z-index: 1;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.feature-card:hover .feature-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: var(--shadow-xl);
+  background: linear-gradient(135deg, 
+    var(--color-primary-200) 0%, 
+    var(--color-primary-300) 50%, 
+    var(--color-gold-200) 100%);
+  border-color: var(--color-gold-300);
 }
 
 .feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  width: 28px;
+  height: 28px;
+  color: var(--color-primary-600);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: all var(--transition-normal);
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.feature-decoration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  opacity: 0.6;
+  transition: opacity var(--transition-normal);
+}
+
+.feature-card:hover .feature-decoration {
+  opacity: 1;
+}
+
+.decoration-line {
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--color-primary-300) 50%, 
+    transparent 100%);
+  border-radius: 1px;
+}
+
+.decoration-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-gold-400);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
 }
 
 .feature-card h3 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.75rem;
-  color: #111827;
+  color: var(--color-gray-900);
+  position: relative;
+  z-index: 1;
+  letter-spacing: -0.025em;
+  line-height: 1.3;
 }
 
 .feature-card p {
-  color: #6b7280;
+  color: var(--color-gray-600);
   line-height: 1.5;
+  font-size: 0.95rem;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: 260px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Enhanced section header for Why Choose Us */
+.why-choose-us .section-header {
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.why-choose-us .section-title {
+  background: var(--gradient-luxury);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 900;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.why-choose-us .section-subtitle {
+  font-size: 1.25rem;
+  color: var(--color-gray-600);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+  font-weight: 500;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+/* Enhanced feature card animations */
+.features-grid.animate-stagger > * {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.features-grid.animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.features-grid.animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+.features-grid.animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+.features-grid.animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+.features-grid.animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+.features-grid.animate-stagger > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Luxury hover effects */
+.feature-card {
+  cursor: pointer;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-2xl);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover::after {
+  transform: scaleX(1);
+}
+
+/* Enhanced accessibility */
+.feature-card:focus-within {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+.feature-card * {
+  transition: all var(--transition-normal);
 }
 
 /* CTA Section */
@@ -1883,7 +2099,24 @@ onMounted(() => {
   
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 2rem;
+  }
+  
+  .feature-card {
+    padding: 2.5rem 1.5rem;
+  }
+  
+  .feature-icon-wrapper {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .feature-icon {
+    font-size: 2.25rem;
+  }
+  
+  .feature-card h3 {
+    font-size: 1.375rem;
   }
   
   .search-card {
@@ -1956,6 +2189,52 @@ onMounted(() => {
   .hero {
     padding: 2rem 0.75rem;
     min-height: 70vh;
+  }
+  
+  .why-choose-us {
+    padding: 4rem 0;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .feature-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .feature-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-icon {
+    font-size: 2rem;
+  }
+  
+  .feature-decoration {
+    margin-top: 1rem;
+  }
+  
+  .feature-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .feature-card p {
+    font-size: 0.875rem;
+    max-width: 100%;
+  }
+  
+  .why-choose-us .section-title {
+    font-size: 2rem;
+  }
+  
+  .why-choose-us .section-subtitle {
+    font-size: 1rem;
   }
   
   .hero-title {

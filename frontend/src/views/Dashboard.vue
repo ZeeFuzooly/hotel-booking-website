@@ -507,11 +507,11 @@ onMounted(() => {
 .hero-section {
   position: relative;
   background: linear-gradient(135deg, 
-    var(--color-primary-800) 0%, 
-    var(--color-primary-900) 50%, 
-    var(--color-primary-950) 100%);
-  padding: 4rem 0;
-  margin-bottom: 3rem;
+    var(--color-primary-600) 0%, 
+    var(--color-primary-700) 50%, 
+    var(--color-primary-800) 100%);
+  padding: 3rem 0;
+  margin-bottom: 2.5rem;
   overflow: hidden;
 }
 
@@ -535,10 +535,10 @@ onMounted(() => {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at 30% 50%, 
-    rgba(16, 185, 129, 0.1) 0%, 
+    rgba(16, 185, 129, 0.08) 0%, 
     transparent 50%),
     radial-gradient(circle at 70% 20%, 
-    rgba(245, 158, 11, 0.1) 0%, 
+    rgba(245, 158, 11, 0.08) 0%, 
     transparent 50%);
   z-index: 1;
 }
@@ -574,18 +574,18 @@ onMounted(() => {
 
 .welcome-card {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 24px;
-  padding: 2.5rem;
+  border-radius: 20px;
+  padding: 2rem;
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
   transition: all 0.4s ease;
 }
 
 .welcome-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
-  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .welcome-header {
@@ -602,8 +602,8 @@ onMounted(() => {
 }
 
 .avatar {
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
   background: linear-gradient(135deg, 
     var(--color-primary-500) 0%, 
     var(--color-primary-600) 100%);
@@ -611,21 +611,21 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: white;
   border: 3px solid white;
-  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.25);
   transition: all 0.3s ease;
 }
 
 .avatar:hover {
   transform: scale(1.05);
-  box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
 }
 
 .welcome-text h1 {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--color-gray-900);
   margin: 0 0 0.5rem 0;
@@ -651,13 +651,13 @@ onMounted(() => {
 }
 
 .stat-item {
-  background: rgba(16, 185, 129, 0.1);
-  border-radius: 16px;
-  padding: 1.25rem 1.5rem;
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
   text-align: center;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.15);
   transition: all 0.3s ease;
-  min-width: 120px;
+  min-width: 100px;
 }
 
 .stat-item:hover {
@@ -742,22 +742,24 @@ onMounted(() => {
 /* Stats Overview */
 .stats-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
   margin-bottom: 4rem;
   animation: fadeInUp 0.8s ease-out 0.6s both;
 }
 
 .stat-card {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(249, 250, 251, 0.9) 100%);
+  border-radius: 16px;
+  padding: 1.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--color-gray-100);
   transition: all 0.4s ease;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
   position: relative;
   overflow: hidden;
 }
@@ -777,8 +779,8 @@ onMounted(() => {
 }
 
 .stat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
   border-color: var(--color-primary-200);
 }
 
@@ -787,9 +789,9 @@ onMounted(() => {
 }
 
 .stat-icon {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 12px;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -814,12 +816,12 @@ onMounted(() => {
 }
 
 .stat-icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .stat-content h3 {
-  font-size: 1.875rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #1e293b;
   margin: 0 0 0.25rem 0;
@@ -871,7 +873,7 @@ onMounted(() => {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f4f6;
-  border-top: 4px solid #3b82f6;
+  border-top: 4px solid var(--color-primary-600);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
@@ -893,7 +895,7 @@ onMounted(() => {
 }
 
 .retry-btn {
-  background: #3b82f6;
+  background: var(--color-primary-600);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -933,7 +935,7 @@ onMounted(() => {
 }
 
 .badge {
-  background: #3b82f6;
+  background: var(--color-primary-600);
   color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -950,14 +952,14 @@ onMounted(() => {
 }
 
 .view-all {
-  color: #3b82f6;
+  color: var(--color-primary-600);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .view-all:hover {
-  color: #1e40af;
+  color: var(--color-primary-700);
   text-decoration: underline;
 }
 
@@ -968,17 +970,20 @@ onMounted(() => {
 }
 
 .booking-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.5rem;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(249, 250, 251, 0.9) 100%);
+  border-radius: 14px;
+  padding: 1.25rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--color-gray-100);
   transition: all 0.3s ease;
 }
 
 .booking-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  border-color: var(--color-primary-200);
 }
 
 .card-header {
@@ -1063,12 +1068,12 @@ onMounted(() => {
 
 .btn-secondary {
   background: white;
-  color: #3b82f6;
-  border-color: #3b82f6;
+  color: var(--color-primary-600);
+  border-color: var(--color-primary-600);
 }
 
 .btn-secondary:hover {
-  background: #3b82f6;
+  background: var(--color-primary-600);
   color: white;
 }
 
@@ -1085,9 +1090,9 @@ onMounted(() => {
 
 .btn-primary {
   flex: 1;
-  background: #3b82f6;
+  background: var(--color-primary-600);
   color: white;
-  border: 1px solid #3b82f6;
+  border: 1px solid var(--color-primary-600);
   padding: 0.625rem 1rem;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -1097,8 +1102,8 @@ onMounted(() => {
 }
 
 .btn-primary:hover {
-  background: #1e40af;
-  border-color: #1e40af;
+  background: var(--color-primary-700);
+  border-color: var(--color-primary-700);
 }
 
 /* Quick Actions */
@@ -1122,11 +1127,13 @@ onMounted(() => {
 }
 
 .action-card {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem 1.5rem;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(249, 250, 251, 0.9) 100%);
+  border-radius: 14px;
+  padding: 1.75rem 1.25rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--color-gray-100);
   transition: all 0.3s ease;
   cursor: pointer;
   text-align: center;
@@ -1134,26 +1141,27 @@ onMounted(() => {
 }
 
 .action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  border-color: var(--color-primary-200);
 }
 
 .action-icon {
-  width: 4rem;
-  height: 4rem;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  width: 3.5rem;
+  height: 3.5rem;
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   margin: 0 auto 1rem;
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
 }
 
 .action-icon svg {
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
 }
 
 .action-card h3 {
@@ -1171,7 +1179,7 @@ onMounted(() => {
 
 .arrow {
   font-size: 1.25rem;
-  color: #3b82f6;
+  color: var(--color-primary-600);
   font-weight: bold;
   transition: transform 0.3s ease;
 }
@@ -1215,7 +1223,7 @@ onMounted(() => {
 }
 
 .contact-item a {
-  color: #3b82f6;
+  color: var(--color-primary-600);
   text-decoration: none;
 }
 
@@ -1239,13 +1247,13 @@ onMounted(() => {
 }
 
 .faq-item:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
 }
 
 .faq-item.active {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+  border-color: var(--color-primary-600);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
 }
 
 
@@ -1264,7 +1272,7 @@ onMounted(() => {
 .faq-icon {
   width: 2rem;
   height: 2rem;
-  background: #3b82f6;
+  background: var(--color-primary-600);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1313,6 +1321,13 @@ onMounted(() => {
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard {
     padding-top: 60px;
@@ -1358,11 +1373,13 @@ onMounted(() => {
 @media (max-width: 480px) {
   .stats-overview {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .stat-card {
     flex-direction: column;
     text-align: center;
+    padding: 1.5rem;
   }
 
   .welcome-card {
