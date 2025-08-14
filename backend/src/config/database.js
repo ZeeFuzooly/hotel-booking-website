@@ -1,185 +1,262 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const fs = require('fs');
+// In-memory database for Vercel serverless environment
+class InMemoryDatabase {
+  constructor() {
+    this.users = new Map();
+    this.rooms = new Map();
+    this.bookings = new Map();
+    this.refreshTokens = new Map();
+    this.userIdCounter = 1;
+    this.roomIdCounter = 1;
+    this.bookingIdCounter = 1;
+    this.tokenIdCounter = 1;
+    
+    // Initialize with some sample data
+    this.initializeSampleData();
+  }
 
-const dbPath = process.env.DATABASE_PATH || './database/hotel.db';
+  initializeSampleData() {
+    // Add sample rooms
+    const sampleRooms = [
+      {
+        id: this.roomIdCounter++,
+        name: "Luxury Suite",
+        description: "Spacious luxury suite with ocean view",
+        price_per_night: 299.99,
+        capacity: 4,
+        room_type: "suite",
+        amenities: "WiFi, TV, Mini Bar, Ocean View",
+        image_url: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        is_available: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: this.roomIdCounter++,
+        name: "Deluxe Room",
+        description: "Comfortable deluxe room with city view",
+        price_per_night: 199.99,
+        capacity: 2,
+        room_type: "deluxe",
+        amenities: "WiFi, TV, City View",
+        image_url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800",
+        is_available: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: this.roomIdCounter++,
+        name: "Standard Room",
+        description: "Cozy standard room for budget travelers",
+        price_per_night: 99.99,
+        capacity: 2,
+        room_type: "standard",
+        amenities: "WiFi, TV",
+        image_url: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800",
+        is_available: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
 
-// Ensure database directory exists
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+    sampleRooms.forEach(room => {
+      this.rooms.set(room.id, room);
+    });
+  }
+
+  // User methods
+  createUser(userData) {
+    const user = {
+      id: this.userIdCounter++,
+      ...userData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    this.users.set(user.id, user);
+    return user;
+  }
+
+  getUserByEmail(email) {
+    for (const user of this.users.values()) {
+      if (user.email === email) {
+        return user;
+      }
+    }
+    return null;
+  }
+
+  getUserById(id) {
+    return this.users.get(parseInt(id));
+  }
+
+  updateUser(id, updates) {
+    const user = this.users.get(parseInt(id));
+    if (user) {
+      Object.assign(user, updates, { updated_at: new Date().toISOString() });
+      this.users.set(parseInt(id), user);
+    }
+    return user;
+  }
+
+  // Room methods
+  getAllRooms() {
+    return Array.from(this.rooms.values());
+  }
+
+  getRoomById(id) {
+    return this.rooms.get(parseInt(id));
+  }
+
+  updateRoomAvailability(id, isAvailable) {
+    const room = this.rooms.get(parseInt(id));
+    if (room) {
+      room.is_available = isAvailable;
+      room.updated_at = new Date().toISOString();
+      this.rooms.set(parseInt(id), room);
+    }
+    return room;
+  }
+
+  // Booking methods
+  createBooking(bookingData) {
+    const booking = {
+      id: this.bookingIdCounter++,
+      booking_id: `BK${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+      ...bookingData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    this.bookings.set(booking.id, booking);
+    return booking;
+  }
+
+  getBookingsByUserId(userId) {
+    return Array.from(this.bookings.values()).filter(booking => booking.user_id === parseInt(userId));
+  }
+
+  getBookingById(id) {
+    return this.bookings.get(parseInt(id));
+  }
+
+  updateBooking(id, updates) {
+    const booking = this.bookings.get(parseInt(id));
+    if (booking) {
+      Object.assign(booking, updates, { updated_at: new Date().toISOString() });
+      this.bookings.set(parseInt(id), booking);
+    }
+    return booking;
+  }
+
+  // Refresh token methods
+  storeRefreshToken(userId, token, expiresAt) {
+    const tokenRecord = {
+      id: this.tokenIdCounter++,
+      user_id: parseInt(userId),
+      token,
+      expires_at: expiresAt,
+      created_at: new Date().toISOString()
+    };
+    this.refreshTokens.set(tokenRecord.id, tokenRecord);
+    return tokenRecord;
+  }
+
+  getRefreshToken(token) {
+    for (const tokenRecord of this.refreshTokens.values()) {
+      if (tokenRecord.token === token) {
+        return tokenRecord;
+      }
+    }
+    return null;
+  }
+
+  removeRefreshToken(token) {
+    for (const [id, tokenRecord] of this.refreshTokens.entries()) {
+      if (tokenRecord.token === token) {
+        this.refreshTokens.delete(id);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  removeExpiredTokens() {
+    const now = new Date();
+    for (const [id, tokenRecord] of this.refreshTokens.entries()) {
+      if (new Date(tokenRecord.expires_at) < now) {
+        this.refreshTokens.delete(id);
+      }
+    }
+  }
 }
 
-// Create database connection
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Error opening database:', err.message);
-  } else {
-    console.log('Connected to SQLite database');
+// Create singleton instance
+const db = new InMemoryDatabase();
+
+// Simulate database methods for compatibility
+const dbWrapper = {
+  get: (query, params, callback) => {
+    // Handle different query types
+    if (query.includes('SELECT') && query.includes('users') && query.includes('email')) {
+      const email = params[0];
+      const user = db.getUserByEmail(email);
+      callback(null, user);
+    } else if (query.includes('SELECT') && query.includes('users') && query.includes('id')) {
+      const id = params[0];
+      const user = db.getUserById(id);
+      callback(null, user);
+    } else if (query.includes('SELECT') && query.includes('refresh_tokens')) {
+      const token = params[0];
+      const tokenRecord = db.getRefreshToken(token);
+      callback(null, tokenRecord);
+    }
+  },
+
+  run: (query, params, callback) => {
+    // Handle different query types
+    if (query.includes('INSERT INTO users')) {
+      const [email, password, first_name, last_name, phone] = params;
+      const user = db.createUser({ email, password, first_name, last_name, phone });
+      callback(null, { lastID: user.id });
+    } else if (query.includes('INSERT INTO refresh_tokens')) {
+      const [userId, token, expiresAt] = params;
+      const tokenRecord = db.storeRefreshToken(userId, token, expiresAt);
+      callback(null, { lastID: tokenRecord.id });
+    } else if (query.includes('DELETE FROM refresh_tokens')) {
+      const token = params[0];
+      const success = db.removeRefreshToken(token);
+      callback(null, { changes: success ? 1 : 0 });
+    }
+  },
+
+  all: (query, params, callback) => {
+    if (query.includes('SELECT') && query.includes('rooms')) {
+      const rooms = db.getAllRooms();
+      callback(null, rooms);
+    } else if (query.includes('SELECT') && query.includes('bookings') && query.includes('user_id')) {
+      const userId = params[0];
+      const bookings = db.getBookingsByUserId(userId);
+      callback(null, bookings);
+    }
   }
-});
-
-// Enable foreign keys
-db.run('PRAGMA foreign_keys = ON');
-
-// Create tables
-const createTables = () => {
-  return new Promise((resolve, reject) => {
-    // Users table
-    const createUsersTable = `
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        first_name TEXT NOT NULL,
-        last_name TEXT NOT NULL,
-        phone TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    // Rooms table
-    const createRoomsTable = `
-      CREATE TABLE IF NOT EXISTS rooms (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        description TEXT,
-        price_per_night DECIMAL(10,2) NOT NULL,
-        capacity INTEGER NOT NULL,
-        room_type TEXT NOT NULL,
-        amenities TEXT,
-        image_url TEXT,
-        is_available BOOLEAN DEFAULT 1,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    // Bookings table
-    const createBookingsTable = `
-      CREATE TABLE IF NOT EXISTS bookings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        booking_id TEXT UNIQUE NOT NULL,
-        user_id INTEGER NOT NULL,
-        room_id INTEGER NOT NULL,
-        check_in_date DATE NOT NULL,
-        check_out_date DATE NOT NULL,
-        guest_count INTEGER NOT NULL,
-        total_price DECIMAL(10,2) NOT NULL,
-        status TEXT DEFAULT 'confirmed',
-        special_requests TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-        FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
-      )
-    `;
-
-    // Refresh tokens table
-    const createRefreshTokensTable = `
-      CREATE TABLE IF NOT EXISTS refresh_tokens (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        token TEXT UNIQUE NOT NULL,
-        expires_at DATETIME NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-      )
-    `;
-
-    db.serialize(() => {
-      db.run(createUsersTable, (err) => {
-        if (err) {
-          console.error('Error creating users table:', err.message);
-          reject(err);
-        } else {
-          console.log('Users table created successfully');
-        }
-      });
-
-      db.run(createRoomsTable, (err) => {
-        if (err) {
-          console.error('Error creating rooms table:', err.message);
-          reject(err);
-        } else {
-          console.log('Rooms table created successfully');
-        }
-      });
-
-      db.run(createBookingsTable, (err) => {
-        if (err) {
-          console.error('Error creating bookings table:', err.message);
-          reject(err);
-        } else {
-          console.log('Bookings table created successfully');
-        }
-      });
-
-      db.run(createRefreshTokensTable, (err) => {
-        if (err) {
-          console.error('Error creating refresh_tokens table:', err.message);
-          reject(err);
-        } else {
-          console.log('Refresh tokens table created successfully');
-        }
-      });
-
-      db.run('PRAGMA foreign_keys = ON', (err) => {
-        if (err) {
-          console.error('Error enabling foreign keys:', err.message);
-          reject(err);
-        } else {
-          console.log('Foreign keys enabled');
-          resolve();
-        }
-      });
-    });
-  });
 };
 
 // Initialize database
 const initializeDatabase = async () => {
   try {
-    await createTables();
-    console.log('✅ Database initialized successfully');
+    console.log('✅ In-memory database initialized successfully');
+    return Promise.resolve();
   } catch (error) {
     console.error('❌ Error initializing database:', error);
-    process.exit(1);
+    return Promise.reject(error);
   }
 };
 
-// Close database connection
+// Close database connection (no-op for in-memory)
 const closeDatabase = () => {
-  return new Promise((resolve, reject) => {
-    db.close((err) => {
-      if (err) {
-        console.error('Error closing database:', err.message);
-        reject(err);
-      } else {
-        console.log('Database connection closed');
-        resolve();
-      }
-    });
-  });
+  return Promise.resolve();
 };
 
-// Run initialization if this file is executed directly
-if (require.main === module) {
-  initializeDatabase()
-    .then(() => closeDatabase())
-    .then(() => {
-      console.log('Database setup completed');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('Database setup failed:', error);
-      process.exit(1);
-    });
-}
-
 module.exports = {
-  db,
+  db: dbWrapper,
   initializeDatabase,
   closeDatabase
 };

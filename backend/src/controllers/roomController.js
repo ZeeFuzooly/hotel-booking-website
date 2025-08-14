@@ -14,114 +14,70 @@ const getRooms = (req, res) => {
       limit = 10
     } = req.query;
 
-    // Build WHERE clause for filters
-    const whereConditions = [];
-    const queryParams = [];
-
-    if (guests) {
-      whereConditions.push('capacity >= ?');
-      queryParams.push(parseInt(guests));
-    }
-
-    if (room_type) {
-      whereConditions.push('room_type = ?');
-      queryParams.push(room_type);
-    }
-
-    if (min_price) {
-      whereConditions.push('price_per_night >= ?');
-      queryParams.push(parseFloat(min_price));
-    }
-
-    if (max_price) {
-      whereConditions.push('price_per_night <= ?');
-      queryParams.push(parseFloat(max_price));
-    }
-
-    // Check availability for specific dates
-    if (check_in && check_out) {
-      whereConditions.push(`
-        id NOT IN (
-          SELECT DISTINCT room_id 
-          FROM bookings 
-          WHERE status != 'cancelled' 
-          AND (
-            (check_in_date <= ? AND check_out_date > ?) OR
-            (check_in_date < ? AND check_out_date >= ?) OR
-            (check_in_date >= ? AND check_out_date <= ?)
-          )
-        )
-      `);
-      queryParams.push(check_out, check_in, check_out, check_in, check_in, check_out);
-    }
-
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-
-    // Count total rooms for pagination
-    const countQuery = `SELECT COUNT(*) as total FROM rooms ${whereClause}`;
-
-    db.get(countQuery, queryParams, (err, countResult) => {
+    // Get all rooms from in-memory database
+    db.all('SELECT * FROM rooms', [], (err, rooms) => {
       if (err) {
         return res.status(500).json({
           error: 'Database error',
-          message: 'Error counting rooms'
+          message: 'Error retrieving rooms'
         });
       }
 
-      const totalRooms = countResult.total;
-      const totalPages = Math.ceil(totalRooms / limit);
-      const offset = (page - 1) * limit;
-
-      // Get rooms with pagination
-      const roomsQuery = `
-        SELECT 
-          id, name, description, price_per_night, capacity, 
-          room_type, amenities, image_url, created_at, updated_at
-        FROM rooms 
-        ${whereClause}
-        ORDER BY price_per_night ASC
-        LIMIT ? OFFSET ?
-      `;
-
-      const finalParams = [...queryParams, parseInt(limit), offset];
-
-      db.all(roomsQuery, finalParams, (err, rooms) => {
-        if (err) {
-          return res.status(500).json({
-            error: 'Database error',
-            message: 'Error retrieving rooms'
-          });
+      // Apply filters in memory
+      let filteredRooms = rooms.filter(room => {
+        // Filter by guests
+        if (guests && room.capacity < parseInt(guests)) {
+          return false;
         }
 
-        // Parse amenities JSON for each room
-        const roomsWithParsedAmenities = rooms.map(room => ({
-          ...room,
-          amenities: room.amenities ? JSON.parse(room.amenities) : []
-        }));
+        // Filter by room type
+        if (room_type && room.room_type !== room_type) {
+          return false;
+        }
 
-        res.json({
-          rooms: roomsWithParsedAmenities,
-          pagination: {
-            current_page: parseInt(page),
-            total_pages: totalPages,
-            total_rooms: totalRooms,
-            rooms_per_page: parseInt(limit),
-            has_next: page < totalPages,
-            has_prev: page > 1
-          },
-          filters: {
-            check_in,
-            check_out,
-            guests: guests ? parseInt(guests) : null,
-            room_type,
-            min_price: min_price ? parseFloat(min_price) : null,
-            max_price: max_price ? parseFloat(max_price) : null
-          }
-        });
+        // Filter by price range
+        if (min_price && room.price_per_night < parseFloat(min_price)) {
+          return false;
+        }
+
+        if (max_price && room.price_per_night > parseFloat(max_price)) {
+          return false;
+        }
+
+        return true;
+      });
+
+      // Apply availability filter if dates are provided
+      if (check_in && check_out) {
+        // For now, we'll assume all rooms are available
+        // In a real implementation, you'd check against existing bookings
+        filteredRooms = filteredRooms.filter(room => room.is_available);
+      }
+
+      // Apply pagination
+      const totalRooms = filteredRooms.length;
+      const totalPages = Math.ceil(totalRooms / limit);
+      const offset = (page - 1) * limit;
+      const paginatedRooms = filteredRooms.slice(offset, offset + parseInt(limit));
+
+      // Parse amenities for each room
+      const roomsWithParsedAmenities = paginatedRooms.map(room => ({
+        ...room,
+        amenities: room.amenities ? room.amenities.split(', ') : []
+      }));
+
+      res.json({
+        rooms: roomsWithParsedAmenities,
+        pagination: {
+          current_page: parseInt(page),
+          total_pages: totalPages,
+          total_rooms: totalRooms,
+          limit: parseInt(limit)
+        }
       });
     });
   } catch (error) {
-    console.error('Get rooms error:', error);
+    console.error('Error getting rooms:', error);
     res.status(500).json({
       error: 'Internal server error',
       message: 'Error retrieving rooms'
@@ -132,17 +88,9 @@ const getRooms = (req, res) => {
 // Get room by ID
 const getRoomById = (req, res) => {
   try {
-    const roomId = req.params.id;
+    const { id } = req.params;
 
-    const roomQuery = `
-      SELECT 
-        id, name, description, price_per_night, capacity, 
-        room_type, amenities, image_url, is_available, created_at, updated_at
-      FROM rooms 
-      WHERE id = ?
-    `;
-
-    db.get(roomQuery, [roomId], (err, room) => {
+    db.get('SELECT * FROM rooms WHERE id = ?', [id], (err, room) => {
       if (err) {
         return res.status(500).json({
           error: 'Database error',
@@ -153,22 +101,20 @@ const getRoomById = (req, res) => {
       if (!room) {
         return res.status(404).json({
           error: 'Room not found',
-          message: 'Room with the specified ID does not exist'
+          message: 'The requested room does not exist'
         });
       }
 
-      // Parse amenities JSON
+      // Parse amenities
       const roomWithParsedAmenities = {
         ...room,
-        amenities: room.amenities ? JSON.parse(room.amenities) : []
+        amenities: room.amenities ? room.amenities.split(', ') : []
       };
 
-      res.json({
-        room: roomWithParsedAmenities
-      });
+      res.json(roomWithParsedAmenities);
     });
   } catch (error) {
-    console.error('Get room by ID error:', error);
+    console.error('Error getting room by ID:', error);
     res.status(500).json({
       error: 'Internal server error',
       message: 'Error retrieving room'
@@ -176,23 +122,258 @@ const getRoomById = (req, res) => {
   }
 };
 
-// Get room availability for specific dates
-const getRoomAvailability = (req, res) => {
+// Get room types
+const getRoomTypes = (req, res) => {
   try {
-    const roomId = req.params.id;
-    const { check_in, check_out } = req.query;
+    db.all('SELECT DISTINCT room_type FROM rooms', [], (err, types) => {
+      if (err) {
+        return res.status(500).json({
+          error: 'Database error',
+          message: 'Error retrieving room types'
+        });
+      }
 
-    if (!check_in || !check_out) {
+      const roomTypes = types.map(type => type.room_type);
+      res.json(roomTypes);
+    });
+  } catch (error) {
+    console.error('Error getting room types:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Error retrieving room types'
+    });
+  }
+};
+
+// Get room amenities
+const getRoomAmenities = (req, res) => {
+  try {
+    db.all('SELECT amenities FROM rooms', [], (err, rooms) => {
+      if (err) {
+        return res.status(500).json({
+          error: 'Database error',
+          message: 'Error retrieving amenities'
+        });
+      }
+
+      // Extract all unique amenities
+      const allAmenities = new Set();
+      rooms.forEach(room => {
+        if (room.amenities) {
+          const amenities = room.amenities.split(', ');
+          amenities.forEach(amenity => allAmenities.add(amenity.trim()));
+        }
+      });
+
+      res.json(Array.from(allAmenities));
+    });
+  } catch (error) {
+    console.error('Error getting amenities:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Error retrieving amenities'
+    });
+  }
+};
+
+// Create new room (admin only)
+const createRoom = (req, res) => {
+  try {
+    const {
+      name,
+      description,
+      price_per_night,
+      capacity,
+      room_type,
+      amenities,
+      image_url
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !price_per_night || !capacity || !room_type) {
       return res.status(400).json({
-        error: 'Missing dates',
-        message: 'Check-in and check-out dates are required'
+        error: 'Missing required fields',
+        message: 'Name, price, capacity, and room type are required'
       });
     }
 
-    // Check if room exists
-    const roomQuery = 'SELECT id, name FROM rooms WHERE id = ?';
+    const insertQuery = `
+      INSERT INTO rooms (name, description, price_per_night, capacity, room_type, amenities, image_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    db.get(roomQuery, [roomId], (err, room) => {
+    const amenitiesString = Array.isArray(amenities) ? amenities.join(', ') : amenities;
+
+    db.run(insertQuery, [
+      name,
+      description,
+      parseFloat(price_per_night),
+      parseInt(capacity),
+      room_type,
+      amenitiesString,
+      image_url
+    ], function(err) {
+      if (err) {
+        return res.status(500).json({
+          error: 'Database error',
+          message: 'Error creating room'
+        });
+      }
+
+      // Get the created room
+      db.get('SELECT * FROM rooms WHERE id = ?', [this.lastID], (err, room) => {
+        if (err) {
+          return res.status(500).json({
+            error: 'Database error',
+            message: 'Error retrieving created room'
+          });
+        }
+
+        const roomWithParsedAmenities = {
+          ...room,
+          amenities: room.amenities ? room.amenities.split(', ') : []
+        };
+
+        res.status(201).json({
+          message: 'Room created successfully',
+          room: roomWithParsedAmenities
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error creating room:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Error creating room'
+    });
+  }
+};
+
+// Update room (admin only)
+const updateRoom = (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      name,
+      description,
+      price_per_night,
+      capacity,
+      room_type,
+      amenities,
+      image_url,
+      is_available
+    } = req.body;
+
+    // Check if room exists
+    db.get('SELECT * FROM rooms WHERE id = ?', [id], (err, existingRoom) => {
+      if (err) {
+        return res.status(500).json({
+          error: 'Database error',
+          message: 'Error checking room existence'
+        });
+      }
+
+      if (!existingRoom) {
+        return res.status(404).json({
+          error: 'Room not found',
+          message: 'The requested room does not exist'
+        });
+      }
+
+      // Build update query
+      const updateFields = [];
+      const updateValues = [];
+
+      if (name !== undefined) {
+        updateFields.push('name = ?');
+        updateValues.push(name);
+      }
+
+      if (description !== undefined) {
+        updateFields.push('description = ?');
+        updateValues.push(description);
+      }
+
+      if (price_per_night !== undefined) {
+        updateFields.push('price_per_night = ?');
+        updateValues.push(parseFloat(price_per_night));
+      }
+
+      if (capacity !== undefined) {
+        updateFields.push('capacity = ?');
+        updateValues.push(parseInt(capacity));
+      }
+
+      if (room_type !== undefined) {
+        updateFields.push('room_type = ?');
+        updateValues.push(room_type);
+      }
+
+      if (amenities !== undefined) {
+        updateFields.push('amenities = ?');
+        updateValues.push(Array.isArray(amenities) ? amenities.join(', ') : amenities);
+      }
+
+      if (image_url !== undefined) {
+        updateFields.push('image_url = ?');
+        updateValues.push(image_url);
+      }
+
+      if (is_available !== undefined) {
+        updateFields.push('is_available = ?');
+        updateValues.push(is_available);
+      }
+
+      updateFields.push('updated_at = CURRENT_TIMESTAMP');
+      updateValues.push(id);
+
+      const updateQuery = `UPDATE rooms SET ${updateFields.join(', ')} WHERE id = ?`;
+
+      db.run(updateQuery, updateValues, function(err) {
+        if (err) {
+          return res.status(500).json({
+            error: 'Database error',
+            message: 'Error updating room'
+          });
+        }
+
+        // Get the updated room
+        db.get('SELECT * FROM rooms WHERE id = ?', [id], (err, room) => {
+          if (err) {
+            return res.status(500).json({
+              error: 'Database error',
+              message: 'Error retrieving updated room'
+            });
+          }
+
+          const roomWithParsedAmenities = {
+            ...room,
+            amenities: room.amenities ? room.amenities.split(', ') : []
+          };
+
+          res.json({
+            message: 'Room updated successfully',
+            room: roomWithParsedAmenities
+          });
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error updating room:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Error updating room'
+    });
+  }
+};
+
+// Delete room (admin only)
+const deleteRoom = (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if room exists
+    db.get('SELECT * FROM rooms WHERE id = ?', [id], (err, room) => {
       if (err) {
         return res.status(500).json({
           error: 'Database error',
@@ -203,79 +384,29 @@ const getRoomAvailability = (req, res) => {
       if (!room) {
         return res.status(404).json({
           error: 'Room not found',
-          message: 'Room with the specified ID does not exist'
+          message: 'The requested room does not exist'
         });
       }
 
-      // Check for conflicting bookings
-      const availabilityQuery = `
-        SELECT COUNT(*) as conflicting_bookings
-        FROM bookings 
-        WHERE room_id = ? 
-        AND status != 'cancelled'
-        AND (
-          (check_in_date <= ? AND check_out_date > ?) OR
-          (check_in_date < ? AND check_out_date >= ?) OR
-          (check_in_date >= ? AND check_out_date <= ?)
-        )
-      `;
-
-      db.get(availabilityQuery, [roomId, check_out, check_in, check_out, check_in, check_in, check_out], (err, result) => {
+      // Delete the room
+      db.run('DELETE FROM rooms WHERE id = ?', [id], function(err) {
         if (err) {
           return res.status(500).json({
             error: 'Database error',
-            message: 'Error checking room availability'
+            message: 'Error deleting room'
           });
         }
 
-        const isAvailable = result.conflicting_bookings === 0;
-
         res.json({
-          room_id: parseInt(roomId),
-          room_name: room.name,
-          check_in_date: check_in,
-          check_out_date: check_out,
-          is_available: isAvailable,
-          conflicting_bookings: result.conflicting_bookings
+          message: 'Room deleted successfully'
         });
       });
     });
   } catch (error) {
-    console.error('Get room availability error:', error);
+    console.error('Error deleting room:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Error checking room availability'
-    });
-  }
-};
-
-// Get room types
-const getRoomTypes = (req, res) => {
-  try {
-    const typesQuery = `
-      SELECT DISTINCT room_type, COUNT(*) as count
-      FROM rooms 
-      GROUP BY room_type
-      ORDER BY room_type
-    `;
-
-    db.all(typesQuery, [], (err, types) => {
-      if (err) {
-        return res.status(500).json({
-          error: 'Database error',
-          message: 'Error retrieving room types'
-        });
-      }
-
-      res.json({
-        room_types: types
-      });
-    });
-  } catch (error) {
-    console.error('Get room types error:', error);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: 'Error retrieving room types'
+      message: 'Error deleting room'
     });
   }
 };
@@ -283,6 +414,9 @@ const getRoomTypes = (req, res) => {
 module.exports = {
   getRooms,
   getRoomById,
-  getRoomAvailability,
-  getRoomTypes
+  getRoomTypes,
+  getRoomAmenities,
+  createRoom,
+  updateRoom,
+  deleteRoom
 };
