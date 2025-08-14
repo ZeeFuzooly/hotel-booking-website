@@ -1,0 +1,30 @@
+{
+  "name": "hotel-booking-website",
+  "version": "1.0.0",
+  "description": "A production-grade hotel booking application with Vue 3 frontend and Node.js backend",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "db:init": "cd backend && npm run db:init",
+    "db:seed": "cd backend && npm run db:seed"
+  },
+  "keywords": [
+    "hotel",
+    "booking",
+    "vue",
+    "nodejs",
+    "express",
+    "sqlite",
+    "jwt"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
