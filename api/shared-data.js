@@ -1,44 +1,80 @@
 // Shared data store for all serverless functions
-// Note: In production, this should be replaced with a proper database
-// This is just for demonstration purposes
+// Using a singleton pattern for better persistence in Vercel
 
-// Global variables to persist data across function calls
-global.users = global.users || [];
-global.bookings = global.bookings || [];
-global.refreshTokens = global.refreshTokens || [];
-
-// Helper functions
-const getUsers = () => global.users || [];
-const getBookings = () => global.bookings || [];
-const getRefreshTokens = () => global.refreshTokens || [];
-
-const addUser = (user) => {
-  global.users = global.users || [];
-  global.users.push(user);
-  return user;
-};
-
-const addBooking = (booking) => {
-  global.bookings = global.bookings || [];
-  global.bookings.push(booking);
-  return booking;
-};
-
-const addRefreshToken = (token) => {
-  global.refreshTokens = global.refreshTokens || [];
-  global.refreshTokens.push(token);
-  return token;
-};
-
-const removeRefreshToken = (token) => {
-  global.refreshTokens = global.refreshTokens || [];
-  const index = global.refreshTokens.findIndex(t => t.token === token);
-  if (index > -1) {
-    global.refreshTokens.splice(index, 1);
-    return true;
+class DataStore {
+  constructor() {
+    if (!DataStore.instance) {
+      this.users = [];
+      this.bookings = [];
+      this.refreshTokens = [];
+      DataStore.instance = this;
+    }
+    return DataStore.instance;
   }
-  return false;
-};
+
+  // User methods
+  getUsers() {
+    return this.users;
+  }
+
+  addUser(user) {
+    this.users.push(user);
+    return user;
+  }
+
+  findUserByEmail(email) {
+    return this.users.find(u => u.email === email);
+  }
+
+  findUserByCredentials(email, password) {
+    return this.users.find(u => u.email === email && u.password === password);
+  }
+
+  // Booking methods
+  getBookings() {
+    return this.bookings;
+  }
+
+  addBooking(booking) {
+    this.bookings.push(booking);
+    return booking;
+  }
+
+  // Token methods
+  getRefreshTokens() {
+    return this.refreshTokens;
+  }
+
+  addRefreshToken(token) {
+    this.refreshTokens.push(token);
+    return token;
+  }
+
+  removeRefreshToken(token) {
+    const index = this.refreshTokens.findIndex(t => t.token === token);
+    if (index > -1) {
+      this.refreshTokens.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+}
+
+// Create singleton instance
+const dataStore = new DataStore();
+
+// Export helper functions
+const getUsers = () => dataStore.getUsers();
+const getBookings = () => dataStore.getBookings();
+const getRefreshTokens = () => dataStore.getRefreshTokens();
+
+const addUser = (user) => dataStore.addUser(user);
+const addBooking = (booking) => dataStore.addBooking(booking);
+const addRefreshToken = (token) => dataStore.addRefreshToken(token);
+const removeRefreshToken = (token) => dataStore.removeRefreshToken(token);
+
+const findUserByEmail = (email) => dataStore.findUserByEmail(email);
+const findUserByCredentials = (email, password) => dataStore.findUserByCredentials(email, password);
 
 module.exports = {
   getUsers,
@@ -47,5 +83,7 @@ module.exports = {
   addUser,
   addBooking,
   addRefreshToken,
-  removeRefreshToken
+  removeRefreshToken,
+  findUserByEmail,
+  findUserByCredentials
 };
