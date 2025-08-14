@@ -225,33 +225,43 @@ const db = new InMemoryDatabase();
 const dbWrapper = {
   get: (query, params, callback) => {
     try {
+      console.log('Database GET query:', query, 'params:', params);
+      
       // Handle different query types
       if (query.includes('SELECT') && query.includes('users') && query.includes('email')) {
         const email = params[0];
         const user = db.getUserByEmail(email);
+        console.log('Found user:', user);
         callback(null, user);
       } else if (query.includes('SELECT') && query.includes('users') && query.includes('id')) {
         const id = params[0];
         const user = db.getUserById(id);
+        console.log('Found user by ID:', user);
         callback(null, user);
       } else if (query.includes('SELECT') && query.includes('refresh_tokens')) {
         const token = params[0];
         const tokenRecord = db.getRefreshToken(token);
+        console.log('Found token record:', tokenRecord);
         callback(null, tokenRecord);
       } else if (query.includes('SELECT') && query.includes('rooms') && query.includes('id')) {
         const id = params[0];
         const room = db.getRoomById(id);
+        console.log('Found room by ID:', room);
         callback(null, room);
       } else if (query.includes('SELECT') && query.includes('COUNT(*)')) {
         // Handle count queries
         if (query.includes('rooms')) {
           const rooms = db.getAllRooms();
-          callback(null, { total: rooms.length });
+          const result = { total: rooms.length };
+          console.log('Room count result:', result);
+          callback(null, result);
         } else {
+          console.log('Unknown count query, returning 0');
           callback(null, { total: 0 });
         }
       } else {
         // Default case - return null for unknown queries
+        console.log('Unknown GET query, returning null');
         callback(null, null);
       }
     } catch (error) {
@@ -262,41 +272,51 @@ const dbWrapper = {
 
   run: (query, params, callback) => {
     try {
+      console.log('Database RUN query:', query, 'params:', params);
+      
       // Handle different query types
       if (query.includes('INSERT INTO users')) {
         const [email, password, first_name, last_name, phone] = params;
         const user = db.createUser({ email, password, first_name, last_name, phone });
+        console.log('Created user:', user);
         callback(null, { lastID: user.id });
       } else if (query.includes('INSERT INTO refresh_tokens')) {
         const [userId, token, expiresAt] = params;
         const tokenRecord = db.storeRefreshToken(userId, token, expiresAt);
+        console.log('Stored token record:', tokenRecord);
         callback(null, { lastID: tokenRecord.id });
       } else if (query.includes('DELETE FROM refresh_tokens')) {
         const token = params[0];
         const success = db.removeRefreshToken(token);
+        console.log('Removed token:', success);
         callback(null, { changes: success ? 1 : 0 });
       } else if (query.includes('INSERT INTO rooms')) {
         // Handle room creation
         const [name, description, price_per_night, capacity, room_type, amenities, image_url] = params;
         const room = db.createRoom({ name, description, price_per_night, capacity, room_type, amenities, image_url });
+        console.log('Created room:', room);
         callback(null, { lastID: room.id });
       } else if (query.includes('UPDATE rooms')) {
         // Handle room updates
         const id = params[params.length - 1]; // Last parameter is usually the ID
         const room = db.updateRoom(id, {});
+        console.log('Updated room:', room);
         callback(null, { changes: room ? 1 : 0 });
       } else if (query.includes('DELETE FROM rooms')) {
         // Handle room deletion
         const id = params[0];
         const success = db.deleteRoom(id);
+        console.log('Deleted room:', success);
         callback(null, { changes: success ? 1 : 0 });
       } else if (query.includes('INSERT INTO bookings')) {
         // Handle booking creation
         const [booking_id, user_id, room_id, check_in_date, check_out_date, guest_count, total_price, status, special_requests] = params;
         const booking = db.createBooking({ booking_id, user_id, room_id, check_in_date, check_out_date, guest_count, total_price, status, special_requests });
+        console.log('Created booking:', booking);
         callback(null, { lastID: booking.id });
       } else {
         // Default case for other queries
+        console.log('Unknown RUN query, returning changes: 0');
         callback(null, { changes: 0 });
       }
     } catch (error) {
@@ -307,26 +327,36 @@ const dbWrapper = {
 
   all: (query, params, callback) => {
     try {
+      console.log('Database ALL query:', query, 'params:', params);
+      
       if (query.includes('SELECT') && query.includes('rooms')) {
         const rooms = db.getAllRooms();
+        console.log('Found rooms:', rooms.length);
         callback(null, rooms);
       } else if (query.includes('SELECT') && query.includes('bookings') && query.includes('user_id')) {
         const userId = params[0];
         const bookings = db.getBookingsByUserId(userId);
+        console.log('Found bookings for user:', bookings.length);
         callback(null, bookings);
       } else if (query.includes('SELECT DISTINCT room_type FROM rooms')) {
         const rooms = db.getAllRooms();
         const roomTypes = [...new Set(rooms.map(room => room.room_type))];
-        callback(null, roomTypes.map(type => ({ room_type: type })));
+        const result = roomTypes.map(type => ({ room_type: type }));
+        console.log('Found room types:', result);
+        callback(null, result);
       } else if (query.includes('SELECT amenities FROM rooms')) {
         const rooms = db.getAllRooms();
-        callback(null, rooms.map(room => ({ amenities: room.amenities })));
+        const result = rooms.map(room => ({ amenities: room.amenities }));
+        console.log('Found amenities:', result);
+        callback(null, result);
       } else if (query.includes('SELECT') && query.includes('bookings')) {
         // Handle other booking queries
         const bookings = Array.from(db.bookings.values());
+        console.log('Found all bookings:', bookings.length);
         callback(null, bookings);
       } else {
         // Default case - return empty array for unknown queries
+        console.log('Unknown ALL query, returning empty array');
         callback(null, []);
       }
     } catch (error) {
